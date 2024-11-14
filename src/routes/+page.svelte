@@ -118,7 +118,7 @@
 					<CardDescription>Made by Ghoul</CardDescription>
 					<nav class="flex items-center gap-2">
 						<a
-							href="https://github.com"
+							href="https://github.com/NotGhoull/simple-todo-list/"
 							class="flex cursor-pointer flex-row gap-2 hover:text-primary hover:underline"
 						>
 							<GithubIcon />
