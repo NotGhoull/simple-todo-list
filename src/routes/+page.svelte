@@ -1,7 +1,7 @@
 <script lang="ts">
 	// Import Shadcn/UI components
 	import { slide } from 'svelte/transition';
-	import { CheckCircleIcon, Github, GithubIcon, PlusCircleIcon } from 'lucide-svelte';
+	import { CheckCircleIcon, Github, GithubIcon, PlusCircleIcon, SunMoonIcon } from 'lucide-svelte';
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
@@ -13,6 +13,7 @@
 	// Todo specific stuff
 	import { todoManager, type Todo } from '$lib/todoDataManager';
 	import type { CustomEventHandler } from 'bits-ui';
+	import { mode, toggleMode } from 'mode-watcher';
 
 	// State variables
 
@@ -143,6 +144,9 @@
 				/>
 				<Button on:click={createNewTask} class="flex items-center gap-2 hover:scale-105">
 					<PlusCircleIcon class="h-4 w-4" /> Add
+				</Button>
+				<Button on:click={toggleMode} variant="outline" size="icon">
+					<SunMoonIcon />
 				</Button>
 			</div>
 
