@@ -10,14 +10,9 @@
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import CardDescription from '$lib/components/ui/card/card-description.svelte';
 
-	/**
-	 * The task interface
-	 */
-	interface todoTask {
-		id: number;
-		text: string;
-		completed: boolean;
-	}
+	// Todo specific stuff
+	import { todoManager, type Todo } from '$lib/todoDataManager';
+	import type { CustomEventHandler } from 'bits-ui';
 
 	// State variables
 
@@ -29,10 +24,7 @@
 	/**
 	 * Holds all the todos.
 	 */
-	let todos: todoTask[] = $state([
-		{ id: Date.now(), text: 'This is an example todo, add your own!', completed: false }
-	]);
-
+	let todos: Todo[] = $state(todoManager.getTodos());
 	/**
 	 * The currently active filter. This can be:
 	 * - All
@@ -68,10 +60,8 @@
 	 * text input
 	 */
 	function createNewTask() {
-		if (newTaskText.trim()) {
-			todos.push({ id: Date.now(), text: newTaskText, completed: false });
-			newTaskText = '';
-		}
+		todos = todoManager.addTodo({ text: newTaskText, completed: false });
+		newTaskText = '';
 	}
 
 	/**
@@ -79,7 +69,7 @@
 	 * @param id - The task to delete
 	 */
 	function deleteTask(id: number) {
-		todos = todos.filter((todo) => todo.id !== id);
+		todos = todoManager.deleteTodo(id);
 	}
 
 	/**
@@ -104,6 +94,19 @@
 		else if (event.key === 'Escape') textInput?.blur();
 		// Otherwise, we set the focus to the text field.
 		else textInput?.focus();
+	}
+
+	function updateTodoCompletion(
+		id: number,
+		state: boolean,
+		event: CustomEventHandler<MouseEvent, HTMLButtonElement>
+	): void {
+		// For whatever reason, this gives us the inverted state.
+		// which is why we do this weird conversion
+		const activeState =
+			event.detail.currentTarget.attributes[0].value == 'unchecked' ? 'checked' : 'unchecked';
+
+		todos = todoManager.updateTodo(id, { completed: state });
 	}
 </script>
 
@@ -171,7 +174,11 @@
 							class="flex items-center space-x-4 p-4 transition hover:bg-muted/50"
 							transition:slide
 						>
-							<Checkbox bind:checked={todo.completed} class="h-5 w-5 hover:scale-110" />
+							<Checkbox
+								on:click={(event) => updateTodoCompletion(todo.id, !todo.completed, event)}
+								bind:checked={todo.completed}
+								class="h-5 w-5 hover:scale-110"
+							/>
 							<span
 								class="flex-1 font-bold {todo.completed
 									? 'text-muted-foreground line-through'
