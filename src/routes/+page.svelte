@@ -162,7 +162,7 @@
 			</Tabs>
 
 			<!-- Todos list -->
-			<div class="max-h-l h-60 space-y-3 overflow-scroll" transition:slide|global>
+			<div class="max-h-l h-60 space-y-3 overflow-auto" transition:slide|global>
 				{#if filteredTodos.length === 0}
 					<div
 						class="flex h-full flex-col items-center justify-center space-x-4 p-4"
