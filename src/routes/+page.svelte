@@ -14,8 +14,12 @@
 	import { todoManager, type Todo } from '$lib/todoDataManager';
 	import type { CustomEventHandler } from 'bits-ui';
 	import { mode, toggleMode } from 'mode-watcher';
+	import SettingsButton from '$lib/components/ui/settings/settingsButton.svelte';
+	import { settingsManager } from '$lib/settingsManager';
 
 	// State variables
+
+	let rotation = 0;
 
 	/**
 	 * The task text used by {@link createNewTask}
@@ -87,33 +91,36 @@
 	function handleKeydown(event: KeyboardEvent) {
 		// Get our text input
 		const textInput = document.getElementById('INPUT_CREATE_TASK') as HTMLInputElement;
+		const div = document.getElementById('ROTATION_CONTAINER') as HTMLDivElement;
+
+		const shouldRotate = settingsManager.get('allowRotation');
 
 		// If we're entering (assuming it's in the field)
 		// We create a new task
 		if (event.key === 'Enter' && newTaskText) createNewTask();
 		// If it's escape, we drop the focus
 		else if (event.key === 'Escape') textInput?.blur();
+		else if (event.key === 'Tab') return;
 		// Otherwise, we set the focus to the text field.
 		else textInput?.focus();
+
+		if (shouldRotate) {
+			div.style.rotate = `${(rotation += 1)}deg`;
+			console.debug('Rotate!');
+		} else {
+			div.style.rotate = '0deg';
+			rotation = 0;
+		}
 	}
 
-	function updateTodoCompletion(
-		id: number,
-		state: boolean,
-		event: CustomEventHandler<MouseEvent, HTMLButtonElement>
-	): void {
-		// For whatever reason, this gives us the inverted state.
-		// which is why we do this weird conversion
-		const activeState =
-			event.detail.currentTarget.attributes[0].value == 'unchecked' ? 'checked' : 'unchecked';
-
+	function updateTodoCompletion(id: number, state: boolean): void {
 		todos = todoManager.updateTodo(id, { completed: state });
 	}
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
 
-<div class="flex min-h-screen w-full max-w-2xl items-center justify-center">
+<div class="flex min-h-screen w-full max-w-2xl items-center justify-center" id="ROTATION_CONTAINER">
 	<Card class="m-4 w-full transition hover:shadow-lg">
 		<CardHeader>
 			<div transition:slide class="space-y-2 text-center">
@@ -139,15 +146,19 @@
 				<Input
 					bind:value={newTaskText}
 					placeholder="Add new task..."
-					class="flex-1 focus:scale-[1.02]"
+					class="flex-1 p-2 transition-all focus:scale-105"
 					id="INPUT_CREATE_TASK"
 				/>
-				<Button on:click={createNewTask} class="flex items-center gap-2 hover:scale-105">
+				<Button
+					on:click={createNewTask}
+					class="flex items-center gap-2 transition-all hover:scale-105"
+				>
 					<PlusCircleIcon class="h-4 w-4" /> Add
 				</Button>
-				<Button on:click={toggleMode} variant="outline" size="icon">
-					<SunMoonIcon />
-				</Button>
+				<SettingsButton />
+				<!-- <Button on:click={toggleMode} variant="outline" size="icon"> -->
+				<!-- <SunMoonIcon /> -->
+				<!-- </Button> -->
 			</div>
 
 			<!-- Filter tabs -->
@@ -179,9 +190,9 @@
 							transition:slide
 						>
 							<Checkbox
-								on:click={(event) => updateTodoCompletion(todo.id, !todo.completed, event)}
+								on:click={() => updateTodoCompletion(todo.id, !todo.completed)}
 								bind:checked={todo.completed}
-								class="h-5 w-5 hover:scale-110"
+								class="h-5 w-5 transition-all hover:scale-110"
 							/>
 							<span
 								class="flex-1 font-bold {todo.completed
@@ -194,7 +205,7 @@
 							<Button
 								variant="outline"
 								size="sm"
-								class="hover:scale-105 hover:bg-destructive"
+								class="transition-all hover:scale-105 hover:bg-destructive hover:text-white"
 								on:click={() => deleteTask(todo.id)}
 							>
 								Delete
@@ -217,7 +228,7 @@
 					on:click={deleteCompletedTasks}
 					variant="ghost"
 					size="sm"
-					class="hover:translate-y-[-2px] hover:rotate-[-2deg] hover:scale-110"
+					class="transition-all hover:translate-y-[-2px] hover:rotate-[-2deg] hover:scale-110"
 				>
 					Remove completed
 				</Button>
